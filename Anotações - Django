@@ -1,0 +1,465 @@
+Com Python e Django instalados
+
+#*#*#*#*#  PARTE 1  #*#*#*#*#
+
+django-admin startproject - Auto-gera alguns arquivo para o projeto
+python3.9 manage.py startapp polls - Cria a pasta polls com arquivos auto-gerados (polls = enquetes)
+
+Dentro do PyCharm:
+
+	Em ./polls/views.py adicionar o trecho de código:
+		from django.shortcuts import render
+		from django.http import HttpResponse
+
+		# Create your views here.
+		def index(request):
+		    return HttpResponse('Teste 1')
+
+	Pelo que entendi, as funções(request) são o que contem o conteúdo que será exibido pelo urls.py
+
+
+	Em ./polls criar o arquivo urls.py e adicionar o trecho de código:
+		from django.urls import path
+		from . import views
+
+		urlpatterns = [
+		    path('', views.teste_index, name='index')
+		]
+	
+	Pelo que entendi, esse urls.py é o que define o que será exibido no site
+
+
+	Em ./site_dj/urls.py incluir na lista urlpatterns o seguinte:
+		path('polls/', include('polls.urls'))
+		
+	Pelo que entendi, esta incluindo um URL de outro arquivo urls.py. Neste caso o ./polls/urls.py
+
+
+
+Depois de realizar essas tarefas no PyCharm, voltar no terminal e executar o seguinte comando:
+
+python3.9 manage.py runserver
+
+Para testar a pagina, abrir o navegador e acessar "localhost:8000/polls/"
+
+
+
+#*#*#*#*#  PARTE 2  #*#*#*#*#
+
+A conexão com BD é diferente para cada banco de dados (PostgreSQL, MySQL, SQLite entre outros)
+
+Essa conexão deve ser configurada em./site_dj/settings.py no dicionario DATABASES
+
+Após essa configuração, executar no terminal:
+python3.9 manage.py migrate
+
+O comando migrate verifica a configuração em INSTALLED_APPS e cria qualquer tabela do banco de dados
+necessária de acordo com as configurações do banco de dados no seu arquivo site_dj/settings.py e as 
+migrações que venham com a aplicação
+
+
+Agora vamos definir modelos de tabelas do BD atraves do proprio Django
+Então dentro do PyCharm em ./polls/models.py temos o exemplo:
+
+	import datetime
+	from django.db import models
+	from django.utils import timezone
+
+	# Create your models here.
+
+
+	class Question(models.Model):
+	    question_text = models.CharField(max_length=200)
+	    pub_date = models.DateTimeField('datepublished')
+
+
+	    # Para acessarmos a informação em formato de texto na API, definimos as funções abaixo
+	    def __str__(self):
+		return self.question_text
+
+	    def was_published_recently(self):
+	    	# Como não consegui ajustar para o fuso horário adequado, usei o timedelta para ajustar manualmente o horario
+		return self.pub_date >= timezone.now() - datetime.timedelta(hours=3)
+
+
+
+Após isso, devemos incluir a aplicação na lista INSTALED_APPS em ./site_dj/settings.py
+
+Para isso precisamos a classe PollsConfig presente em ./polls/apps
+
+Sendo assim, a lista INSTALED_APPS contera os seguintes itens:
+[
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'polls.apps.PollsConfig'
+]
+
+
+Agora o Django sabe que deve incluir a aplicação polls, mas devemos dizer a ele que fizemos alterações nos modelos, portanto executamos o seguinte comando no terminal:
+python manage.py makemigrations polls
+
+Logo em seguida surge um arquivo em ./polls/migrations/
+
+Esse arquivo salva as alterações como uma migração, e sempre tem o inicio de seu nome como um incremento
+Por exemplo: 0001*.py, 0002*.py, 0003*.py e assim por diante
+
+Feito isso, podemos opcionalmente ver a criação dos modelos em formato SQL se executarmos no terminal:
+python3.9 manage.py sqlmigrate polls 0001
+
+onde 0001 é o inicio de um dos arquivos em ./polls/migrations/
+
+
+E para finalizar essa etapa de criação de tabelas, executamos no terminal:
+python3.9 manage.py migrate
+
+isso pega todas as migrações que ainda nao foram aplicadas, e as aplica ao banco de dados, assim criando de fato as tabelas
+
+
+Agora podemos testar a conexão com o BD e ver como funciona com Django, para isso executamos no terminal:
+python3.9 manage.py shell
+
+com isso entramos em um shell interativo do Python
+
+Para inserir e mostrar informações do BD, pode se tomar como base o seguinte exemplo:
+
+	import datetime
+	from django.utils import timezone
+	from polls.models import Question
+	
+	# Inserir
+	q = Question(question_text = 'E ai?', pub_date = timezone.now() - datetime.timedelta(hours=3)
+	q.save()
+	
+	# Exibir
+	Question.objects.all()
+	q.id
+	q.question_text
+	q.pub_date
+	
+	# Alterar o registro atual
+	q.question_text = 'Beleza?'
+	q.save()
+	
+	# Exibir usando filtros
+	Question.objects.filter(id=1)
+	Question.objects.filter(question_text__startswith='Teste')
+	Question.objects.filter(question_text__endswith='?')
+	Question.objects.get(pk=1) ou Question.objects.get(id=1)
+	
+	# Excutando função interna do modelo Question
+	q.was_published_recently()
+	
+	# Usando o modelo Choice
+	q = Question.objects.get(pk=1)
+	q.choice_set.all() 	# Mostra as choices relacionadas ao objeto q, pode ser que ainda nao tenham choices
+	q.choice_set.create(choice_text='Sim', votes=0)
+	q.choice_set.create(choice_text='Não', votes=0)
+	q.choice_set.create(choice_text='Talvez', votes=0)
+	q.choice_set.all() 	# Mostra as choices relacionadas ao objeto q, pode ser que ainda nao tenham choices
+	
+	c = Choice.objects.get(pk=2)
+	
+	# Objetos Choice tem acesso a objetos Question, e vice versa
+	c.question
+	q.choice_set.all()
+	q.choice_set.count()
+	
+	# Também é possivel fazer consultas semelhantes a joins do SQL
+	
+	Choice.objects.filter(question__pub_date__year=current_year)
+	# SELECT choice_text
+	# FROM polls_choice
+	# INNER JOIN polls_question
+	# ON question_id = polls_question.id
+	# WHERE day(polls_question.pub_date) = day(curdate());
+	
+	# Apagando uma choice
+
+	c = q.choice_set.filter(choice_text__startswith='Talv')
+	c.delete()
+	# DELETE FROM polls_choice
+	# WHERE choice_text like 'Talv%'
+	
+
+
+Agora indo para o site...
+Para acessar as informações como administrador, precisamos de um usuario administrador. Para isso executamos no terminal:
+python3.9 manage.py createsuperuser
+
+e preenchemos com as informações solicitadas (usuario, email e senha)
+
+Logo após criar o usuario, ja podemos iniciar o servidor e acessar a area de administração. Iniciamos o servidor com:
+python3.9 manage.py runserver
+
+e no navegador vamos para localhost:8000/admin onde solicitará o usuario e senha, entraremos com o que acabamos de criar acima.
+
+É possível alterar o idioma em ./site_dj/settings.py na variavel LANGUAGE_CODE (pt-br, en-us, es-mx entre outros)
+
+
+É possível editar as aplicações que criamos através do site, mas para isso, precisamos registra-las em ./polls/admin.py:
+
+	from django.contrib import admin
+	from .models import Question
+	admin.site.register(Question)
+
+Aqui registramos apenas o modelo Question, mas o mesmo vale para outros modelos, como o Choice por exemplo e outros futuros.
+
+Agora ao atualizar a pagina do site, podemos ver Question
+
+Ao clicar em Question, podemos ver, editar, apagar e adicionar novas questions em nosso banco de dados
+
+
+##########################  ESTUDAR MELHOR O USO DO TIMEZONE  ##########################
+
+
+
+
+
+
+#*#*#*#*#  PARTE 3  #*#*#*#*#
+
+Agora partindo para uma visualização atraves do site, vamos tratar as views, que sao basicamente as paginas que serao exibidas
+
+Iniciando com views simples, usando HttpResponse, adicionamos em ./polls/views.py o seguinte:
+
+	def detail(request, question_id):
+	    return HttpResponse("You're looking at question %s." % question_id)
+
+	def results(request, question_id):
+	    response = "You're looking at the results of question %s."
+	    return HttpResponse(response % question_id)
+
+	def vote(request, question_id):
+	    return HttpResponse("You're voting on question %s." % question_id)
+
+
+Como essas views serão exibidas no site, precisamos de um URL. Para isso adicionamos as novas views em ./polls/urls.py na lista urlpatterns:
+
+	path('<int:question_id>/', views.detail, name='detail'),
+	path('<int:question_id>/results/', views.results, name='results'),
+	path('<int:question_id>/vote/', views.vote, name='vote')
+	# path('questao_x/qualquer_coisa/', views.vote, name='qualquer_coisa')
+
+
+Agora no navegador, com o servidor ativo, se entrarmos em localhost:8000/polls/5 por exemplo, ja temos acesso a view detail.
+O mesmo vale para results e votes, cada uma com seu URL
+
+Vale lembrar que cada view ode ler registros do banco de dados, ou não. Ela pode usar um sistema de templates como o do Django - ou outro sistema de templates 
+Python de terceiros - ou não. Ela pode gerar um arquivo PDF, saída em um XML, criar um arquivo ZIP sob demanda, qualquer coisa que você quiser,usando qualquer 
+biblioteca Python você quiser.
+
+
+Vamos fazer alterações na já existente view, index:
+	
+	# Tutorial Django
+	def index(request):
+	    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+	    output = ', '.join([q.question_text for q in latest_question_list])
+	    return HttpResponse(output)
+
+	# OU
+
+	# Feito manualmente, para exemplificar usando SQL
+	def index(request):
+	    latest_question_list = Question.objects.raw('Select * from polls_question order by pub_date desc')
+	    output = ', '.join(list(q.question_text for q in teste[:5]))
+	    return HttpResponse(output)
+
+
+
+Para melhor exibição no site, usamos o sistema de templates do proprio Django
+
+Criamos entao dentro de ./polls uma nova pasta chamda 'templates' (Obs.: Tive problemas em deixar 'templates', portanto deixei 'template' sem s no final)
+
+A lista TEMPLATES em ./side_dj/settings.py descreve como o Django vai carregar e renderizar templates
+
+
+##########################  ESTUDAR MELHOR O USO DE TEMPLATES  ##########################
+
+
+
+Por padrão o Django vai procurar pela pasta templates (no meu caso template) dentro de cada app listado em INSTALLED_APPS em ./site_dj/settings.py
+Mas no momento temos apenas o app polls
+
+Dentro desta pasta template, criamos outra pasta chamada polls para diferenciar os templates de cada aplicação
+Pois se tivessemos mais aplicações que usassem templates, o Django iria simplesmente usar a primeira que encontrasse
+
+E finalmente, criamos index.html em ./polls/template/polls/
+
+
+Agora em index.html inserimos o seguinte:
+
+	{% if latest_question_list %}
+	    <ul>
+	    {% for question in latest_question_list %}
+		<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No polls are available.</p>
+	{% endif %}
+
+
+Depois disso, vamos atualizar a view index em ./polls/views.py para:
+
+	from django.http import HttpResponse
+	from django.template import loader
+	from .models import Question
+
+	def index(request):
+	    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+	    template = loader.get_template('polls/index.html')
+	    context = {
+		'latest_question_list': latest_question_list,
+	    }
+	    return HttpResponse(template.render(context, request))
+
+	# As outras views permanecem sem mudanças
+	
+Ou usamos o render ao inves de HttpResponse:
+
+	from django.shortcuts import render
+	from .models import Question
+
+	def index(request):
+	    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+	    context = {'latest_question_list': latest_question_list}
+	    return render(request, 'polls/index.html', context)
+	
+	# As outras views permanecem sem mudanças
+
+
+No atual momento, qualquer uma das duas tras o mesmo resultado, se quisermos, podemos usar o mesmo esquema de consulta via SQL que tinhamos antes dessa atualização
+
+A função render() usada no segundo exemplo, recebe como primeiro parametro, o nome do template, no caso do exemplo foi o 'polls/index.html'
+e o segundo parametro é um dicionario opcional (Estudar melhor essa parte tbm)
+
+
+Agora focando na view detail, que recebe no URL o numero da questao (caso a questao exista), inserimos o seguinte:
+
+	from django.http import Http404
+	from django.shortcuts import render
+
+	from .models import Question
+	# ...
+	def detail(request, question_id):
+	    try:
+		question = Question.objects.get(pk=question_id)
+	    except Question.DoesNotExist:
+		raise Http404("Question does not exist")
+	    return render(request, 'polls/detail.html', {'question': question})
+
+	# As outras views permanecem sem mudanças
+
+Ou usamos o get_object_or_404:
+
+	from django.shortcuts import get_object_or_404, render
+
+	from .models import Question
+	# ...
+	def detail(request, question_id):
+	    question = get_object_or_404(Question, pk=question_id)
+	    return render(request, 'polls/detail.html', {'question': question})
+
+	# As outras views permanecem sem mudanças
+
+No atual momento, qualquer uma das duas tras o mesmo resultado
+Em ambas, a função detail tenta acessar a question com o id igual ao parametro question_id, e caso nao encontre, resulta em uma exceção Http404
+Nos dois exemplos, ja temos um tratamento para a exceção
+
+Existe também a função get_list_or_404(), que trabalha da mesma forma que get_object_or_404()
+com a diferença de que ela usa filter() ao invés de get(). Ela levanta Http404 se a lista estiver vazia.
+
+
+Agora criamos em ./polls/template/polls o arquivo detail.html, e inserimos nele o seguinte:
+	
+	<h1>{{ question.question_text }}</h1>
+	<ul>
+	{% for choice in question.choice_set.all %}
+	    <li>{{ choice.choice_text }}</li>
+	{% endfor %}
+	</ul>
+
+Acima, basicamente o que acontece é:
+
+h1 = Exibe o texto em question_text
+ul / li = Exibe o texto de todas as choices relacionadas a questao
+
+
+
+Agora para um código mais dinamico e menos Hardcoded, vamos fazer alterações nos templates.
+Quando inserimos os paths das views na lista urlpatterns em ./polls/urls , nós atribuimos um nome ao parametro name de cada path
+Esse name pode ser usado para evitarmos ter que passar um caminho de URL especifico nos templates
+
+Para isso vamos alterar o template index.html por exemplo:
+
+	De: <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+
+	Para: <li><a href="{% url 'detail' question.id %}">{{ question.question_text }}</a></li>
+
+
+A template tag {% url %} recebe o name do path em urls.py
+Assim, toda vez que clicarmos em uma questao que esta sendo exibida em localhost:8000/polls/ , seremos direcionados para a pagina de detalhes referente ao id daquela questao. E o URL dessa pagina, será o que ja está pré defeinido em urls.py
+
+
+Como temos apenas uma aplicação (polls), o {% url %} dos templates sempre vao procurar por paths em ./polls/urls.py
+Mas se tivessemos mais aplicações, usar o {% url 'name' %} não seria o suficiente, pois os arquivos urls.py das diferentes aplicações, poderiam ter um ou mais paths com o mesmo name
+Sendo assim, não haveria como diferenciar um do outro
+
+
+Para isso usamos namespacing, com isso podemos definir o name usado em {% url %} e tambem podemos definir em qual aplicação vamos usar aquele name
+
+Então fazemos o seguinte em ./polls/urls.py:
+	
+	from django.urls import path
+	from . import views
+
+	app_name = 'polls'
+	urlpatterns = [
+	    path('', views.index, name='index'),
+	    path('<int:question_id>/', views.detail, name='detail'),
+	    path('<int:question_id>/results/', views.results, name='results'),
+	    path('<int:question_id>/vote/', views.vote, name='vote'),
+	]
+
+A variavel app_name que acabamos de adicionar, serve justamente para dizer que esse arquivo urls.py é relacionado a aplicação polls
+
+Agora no nosso template index.html, faremos a seguinte alteração:
+
+	De: <li><a href="{% url 'detail' question.id %}">{{ question.question_text }}</a></li>
+
+	Para: <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+
+Agora {% url %} recebe 'polls:details', ou seja 'aplicação:name'
+Dessa forma a o template vai procurar pelo path corretamente
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
