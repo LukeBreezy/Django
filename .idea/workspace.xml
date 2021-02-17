@@ -2,17 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0ad7c8e7-9b82-48a9-9a22-4b1bb930b068" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/site_dj/polls/template/polls/detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/site_dj/polls/template/polls/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Django.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Django.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/site_dj/polls/template/polls/results.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documento sem título 1" beforeDir="false" afterPath="$PROJECT_DIR$/Documento sem título 1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Anotações - Django" beforeDir="false" afterPath="$PROJECT_DIR$/Anotações - Django" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/site_dj/polls/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/polls/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/site_dj/polls/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/polls/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/site_dj/polls/template/polls/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/polls/template/polls/detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/site_dj/polls/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/polls/tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/site_dj/polls/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/polls/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/site_dj/polls/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/polls/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/site_dj/site_dj/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/site_dj/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/site_dj/site_dj/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/site_dj/site_dj/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,28 +50,7 @@
       <recent name="$PROJECT_DIR$/site_dj" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.settings">
-    <configuration name="TESTE" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Django" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/site_dj/site_dj" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/site_dj/site_dj/TESTE.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python tests.Unittests for polls.tests.QuestionDetailViewTests.test_past_question">
     <configuration name="Teste" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Django" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -137,11 +114,62 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="views" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Django" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/site_dj/polls" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/site_dj/polls/views.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Unittests for polls.tests.QuestionDetailViewTests.test_past_question" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
+      <module name="Django" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/site_dj" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;polls.tests.QuestionDetailViewTests.test_past_question&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Unittests for polls.tests.QuestionIndexViewTests" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
+      <module name="Django" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/site_dj" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;polls.tests.QuestionIndexViewTests&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Unittests for polls.tests.QuestionDetailViewTests.test_past_question" />
+        <item itemvalue="Python tests.Unittests for polls.tests.QuestionIndexViewTests" />
+        <item itemvalue="Python.views" />
         <item itemvalue="Python.settings" />
         <item itemvalue="Python.Teste" />
-        <item itemvalue="Python.TESTE" />
       </list>
     </recent_temporary>
   </component>

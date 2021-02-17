@@ -266,7 +266,7 @@ Vamos fazer alterações na já existente view, index:
 	# Feito manualmente, para exemplificar usando SQL
 	def index(request):
 	    latest_question_list = Question.objects.raw('Select * from polls_question order by pub_date desc')
-	    output = ', '.join(list(q.question_text for q in teste[:5]))
+	    output = ', '.join(list(q.question_text for q in latest_question_list[:5]))
 	    return HttpResponse(output)
 
 
@@ -436,6 +436,172 @@ Agora no nosso template index.html, faremos a seguinte alteração:
 
 Agora {% url %} recebe 'polls:details', ou seja 'aplicação:name'
 Dessa forma a o template vai procurar pelo path corretamente
+
+
+
+
+
+
+#*#*#*#*#  PARTE 4  #*#*#*#*#
+
+
+Partindo para uma representação mais realista, vamos alterar nosso arquivo ./polls/template/polls/detail.html para que ele seja exibido com um formulario:
+
+	<h1>{{ question.question_text }}</h1>
+
+	{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+	<form action="{% url 'polls:vote' question.id %}" method="post">
+	{% csrf_token %}
+	{% for choice in question.choice_set.all %}
+	    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+	    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+	{% endfor %}
+	<input type="submit" value="Vote">
+	</form>
+
+
+Dessa forma podemos ver os detalhes de uma questao, suas opções de voto e etc.
+As opções de voto serão as choices relacionadas aquela question
+E a choice selecionada e votada, será incrementada na base de dados, usando o metodo POST, pois teremos alterações na base de dados
+
+
+
+##########################  ESTUDAR MELHOR O USO DO {% csrf_token %}  ##########################
+
+
+Agora com foco voltado para a view vote, vamos reescreve-la:
+
+	from django.http import HttpResponse, HttpResponseRedirect
+	from django.shortcuts import get_object_or_404, render
+	from django.urls import reverse
+
+	from .models import Choice, Question
+	# ...
+	def vote(request, question_id):
+	    question = get_object_or_404(Question, pk=question_id)
+	    try:
+		selected_choice = question.choice_set.get(pk=request.POST['choice'])
+	    except (KeyError, Choice.DoesNotExist):
+		# Redisplay the question voting form.
+		return render(request, 'polls/detail.html', {
+		    'question': question,
+		    'error_message': "You didn't select a choice.",
+		})
+	    else:
+		selected_choice.votes += 1
+		selected_choice.save()
+		# Always return an HttpResponseRedirect after successfully dealing
+		# with POST data. This prevents data from being posted twice if a
+		# user hits the Back button.
+		return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+	# As outras views permanecem sem mudanças
+
+
+Nesta view:
+question = tenta acessar a Question com pk=question_id
+selected_choice = tenta pegar a choice relacionada a question, e essa choice tem que ter a pk igual ao resultado do POST do formulario
+caso nao seja escolhida nenhuma choice, a pagia detail é recarregada e exibe uma mensagem de erro "você nao escolheu uma opção ..."
+caso seja escolhida uma das choices, essa choice terá seu voto incrementado no banco de dados
+
+e por fim manda o usuario para localhost:8000/polls/question_id/results com HttpResponseRedirect,
+para que o usuario nao fique na pagina localhost:8000/polls/question_id/vote e corra o risco de enviar o voto novamente
+
+
+Agora tratamos a view results:
+
+	from django.shortcuts import get_object_or_404, render
+
+
+	def results(request, question_id):
+	    question = get_object_or_404(Question, pk=question_id)
+	    return render(request, 'polls/results.html', {'question': question})
+
+
+E criamos o template results.html em ./polls/template/polls:
+
+	<h1>{{ question.question_text }}</h1>
+
+	<ul>
+	{% for choice in question.choice_set.all %}
+	    <li>{{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+	{% endfor %}
+	</ul>
+
+	<a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+
+
+
+Agora quando votamos, somos redirecionados para uma pagina que exibe os resultados atuais(Quantidade de votos para cada choice daquela question)
+e a um caminho para votarmos novamente, se for de nossa vontade
+
+
+Para otimizar o projeto, o Django tem um atalho chamado "generic views"
+basicamente, fazem todo o trabalho que programamos para acessar informações na base de dados
+precisando apenas saber qual o model (Question ou Choice por exemplo) e qual template queremos usar
+
+Para isso precisamos atualizar o arquivo ./polls/urls.py:
+
+	from django.urls import path
+
+	from . import views
+
+	app_name = 'polls'
+	urlpatterns = [
+	    path('', views.IndexView.as_view(), name='index'),
+	    path('<int:pk>/', views.DetailView.as_view(), name='detail'),
+	    path('<int:pk>/results/', views.ResultsView.as_view(), name='results'),
+	    path('<int:question_id>/vote/', views.vote, name='vote'),
+	]
+
+
+
+
+Agora em ./polls/views.py vamos remover as views index, detail e results, para dar espaço para as generic views
+Então no lugar das antigas views, vamos usar o seguinte:
+
+	from django.http import HttpResponseRedirect
+	from django.shortcuts import get_object_or_404, render
+	from django.urls import reverse
+	from django.views import generic
+
+	from .models import Choice, Question
+
+
+	class IndexView(generic.ListView):
+	    template_name = 'polls/index.html'
+	    context_object_name = 'latest_question_list'
+
+	    def get_queryset(self):
+		"""Return the last five published questions."""
+		return Question.objects.order_by('-pub_date')[:5]
+
+
+	class DetailView(generic.DetailView):
+	    model = Question
+	    template_name = 'polls/detail.html'
+
+
+	class ResultsView(generic.DetailView):
+	    model = Question
+	    template_name = 'polls/results.html'
+
+
+	def vote(request, question_id):
+	    ... # same as above, no changes needed.
+
+
+
+Como dito anteriormente, as generic views precisam saber qual model e template devem usar
+Acima usamos uma ListView e duas DetailView
+
+As DetailViews precisam receber a chave primaria capturada no URL(pk), por isso em ./polls/urls.py trocamos question_id por pk em alguns casos
+
+
+
+
+
 
 
 
