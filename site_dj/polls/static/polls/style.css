@@ -1,0 +1,10 @@
+li a {
+    color: blue;
+    background: purple;
+    border-radius: 1px;
+    padding: 1px;
+    margin: 1px;
+}
+body{
+    background: white url("images/background.png") no-repeat;
+}
